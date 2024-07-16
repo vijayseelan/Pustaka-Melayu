@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pustaka Melayu</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+:root {
+    --primary-color: #6C63FF;
+    --secondary-color: #4CAF50;
+    --background-color: #F0F4F8;
+    --text-color: #333;
+    --card-bg: #ffffff;
+    --input-bg: #E8ECF0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 800px;
+    width: 100%;
+    padding: 30px;
+    box-sizing: border-box;
+}
+
+.card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    padding: 30px;
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+}
+
+h1, h2, h3 {
+    color: var(--primary-color);
+    margin-top: 0;
+}
+
+h1 {
+    font-size: 2.8em;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+h2 {
+    font-size: 2em;
+    margin-bottom: 20px;
+}
+
+.login-container, .main-container {
+    display: none;
+}
+
+.visible {
+    display: block;
+}
+
+input[type="email"], input[type="password"], input[type="date"], select {
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    background: var(--input-bg);
+    transition: all 0.3s ease;
+}
+
+input[type="email"]:focus, input[type="password"]:focus, input[type="date"]:focus, select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.3);
+}
+
+button {
+    display: inline-block;
+    width: 100%;
+    padding: 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-bottom: 10px; /* Added margin for better spacing */
+}
+
+button:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.progress-bar {
+    width: 100%;
+    background-color: var(--input-bg);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.progress {
+    width: 0%;
+    height: 20px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    text-align: center;
+    line-height: 20px;
+    color: white;
+    transition: width 0.5s ease;
+}
+
+.difficult-words {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.difficult-word {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--input-bg);
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.difficult-word:hover {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.speaker-icon {
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.small-button {
+    width: 48%;
+}
+
+#reading-content {
+    line-height: 1.8;
+    font-size: 18px;
+}
+
+#reading-content span {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 2px 5px;
+    border-radius: 5px;
+}
+
+#reading-content span:hover {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+#performanceChart {
+    width: 100%;
+    height: 300px;
+}
+
+.user-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.user-controls input {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.login-buttons {
+    display: flex;
+    flex-direction: column; /* Changed for better mobile layout */
+    width: 100%;
+    margin-top: 10px;
+}
+
+.login-buttons button {
+    width: 100%;
+    margin-bottom: 10px; /* Added margin for better spacing */
+}
+
+.date-container {
+    position: relative;
+    width: 100%;
+}
+
+.date-container input[type="date"] {
+    width: calc(100% - 40px);
+    padding-right: 40px;
+}
+
+.date-container .calendar-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--primary-color);
+    font-size: 20px;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 20px;
+    }
+    h1 {
+        font-size: 2.2em;
+    }
+    h2 {
+        font-size: 1.7em;
+    }
+    .button-group {
+        flex-direction: column;
+    }
+    .small-button {
+        width: 100%;
+        margin-top: 10px;
+    }
+    .login-buttons {
+        flex-direction: column;
+    }
+    .login-buttons button {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+/* Dark Theme */
+.main-container.dark-theme {
+    --primary-color: #BB86FC;
+    --secondary-color: #03DAC6;
+    --background-color: #121212;
+    --text-color: #FFFFFF;
+    --card-bg: #1F1F1F;
+    --input-bg: #333333;
+}
+
+.main-container.dark-theme .card {
+    color: var(--text-color); /* Ensure card text is white in dark theme */
+}
+
+.main-container.dark-theme h1, 
+.main-container.dark-theme h2, 
+.main-container.dark-theme h3 {
+    color: var(--primary-color); /* Ensure primary headings retain primary color */
+}
+
+.main-container.dark-theme #reading-content span {
+    color: var(--text-color); /* Ensure reading content text is white in dark theme */
+}
+
+.main-container.dark-theme #reading-content span:hover {
+    background-color: var(--secondary-color);
+    color: var(--text-color); /* Ensure hover text is white in dark theme */
+}
+
+.main-container.dark-theme .difficult-word {
+    color: var(--text-color); /* Ensure difficult words text is white in dark theme */
+}
+
+.main-container.dark-theme .difficult-word:hover {
+    background-color: var(--secondary-color);
+    color: var(--text-color); /* Ensure hover text is white in dark theme */
+}
+
+.main-container.dark-theme .calendar-icon {
+    color: var(--primary-color); /* Ensure calendar icon remains primary color */
+}
+
+.link-button {
+    display: inline-block;
+    margin: 5px 0;
+    padding: 10px 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.link-button:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+#tts-info {
+    display: none;
+    color: red;
+    margin-top: 10px;
+}
+
+#tts-icon {
+    cursor: pointer;
+    color: var(--primary-color);
+    font-size: 20px;
+    margin-left: 10px;
+    margin-top: 20px; /* Added margin to position the icon further away */
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-container visible">
+            <div class="card">
+                <h1><i class="fas fa-book-reader"></i> Pustaka Melayu</h1>
+                <div class="user-controls">
+                    <input type="email" id="login-email" placeholder="Masukkan alamat emel">
+                    <input type="password" id="login-password" placeholder="Masukkan kata laluan">
+                    <div class="login-buttons">
+                        <button onclick="login()"><i class="fas fa-sign-in-alt"></i> Log Masuk</button>
+                        <button onclick="register()"><i class="fas fa-user-plus"></i> Daftar</button>
+                        <button onclick="resetPassword()"><i class="fas fa-key"></i> Reset Kata Laluan</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-container">
+            <h1><i class="fas fa-book-reader"></i> Pustaka Melayu</h1>
+            
+            <div class="card">
+                <h2><i class="fas fa-layer-group"></i> Pilih Tahap:</h2>
+                <select id="level-selector" onchange="loadMaterials()">
+                    <option value="mudah">Mudah</option>
+                    <option value="mediocre">Sederhana</option>
+                    <option value="good">Baik</option>
+                </select>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-book"></i> Pilih Bahan Bacaan:</h2>
+                <select id="material-selector" onchange="loadReadingMaterial()">
+                    <!-- Options will be populated dynamically -->
+                </select>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-star"></i> Penilaian Guru:</h2>
+                <div class="date-container">
+                    <input type="date" id="evaluation-date" placeholder="Tarikh Penilaian">
+                    <i class="fas fa-calendar-alt calendar-icon" onclick="document.getElementById('evaluation-date').focus();"></i>
+                </div>
+                <select id="evaluation-level">
+                    <option value="1">1 - Mudah</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5 - Sederhana</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10 - Baik</option>
+                </select>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-tasks"></i> Kemajuan:</h2>
+                <div class="progress-bar">
+                    <div id="progress" class="progress">0%</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div id="reading-content"></div>
+            </div>
+            
+            <div class="card">
+                <h3><i class="fas fa-exclamation-circle"></i> Kata-Kata Sukar:</h3>
+                <div id="difficult-words-list" class="difficult-words"></div>
+                <i id="tts-icon" class="fas fa-info-circle"></i>
+                <div id="tts-info">
+                    <p>Sila pasang pakej suara Bahasa Melayu untuk fungsi text-to-speech (TTS).</p>
+                    <a href="https://support.microsoft.com/en-gb/topic/download-languages-and-voices-for-immersive-reader-read-mode-and-read-aloud-4c83a8d8-7486-42f7-8e46-2b0fdf753130" target="_blank" class="link-button">Windows</a>
+                    <a href="https://support.google.com/accessibility/android/answer/6006983?hl=en" target="_blank" class="link-button">Android</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-chart-line"></i> Graf Prestasi:</h2>
+                <select id="chart-material-selector" onchange="updateChartMaterial()">
+                    <!-- Options will be populated dynamically -->
+                </select>
+                <canvas id="performanceChart"></canvas>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-adjust"></i> Pilih Tema:</h2>
+                <label class="theme-toggle">
+                    <input type="checkbox" id="theme-toggle" onchange="toggleTheme()">
+                    <span>Dark Theme</span>
+                </label>
+            </div>
+
+            <div class="button-group">
+                <button class="small-button" onclick="saveProgress()"><i class="fas fa-save"></i> Simpan Kemajuan</button>
+                <button class="small-button" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Log Keluar</button>
+            </div>
+        </div>
+    </div>
+    <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+         apiKey: "AIzaSyAyxwfLTjdfc4XqZPje8BnWqtlbvTQGUFw",
+        authDomain: "bacaan-bahasa-melayu.firebaseapp.com",
+        databaseURL: "https://bacaan-bahasa-melayu-default-rtdb.firebaseio.com",
+        projectId: "bacaan-bahasa-melayu",
+        storageBucket: "bacaan-bahasa-melayu.appspot.com",
+        messagingSenderId: "1074115303910",
+        appId: "1:1074115303910:web:df781b567c8c9d4db54e4d",
+        measurementId: "G-XS9D0Z1N2T"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const auth = firebase.auth();
+
+    // Reading materials
+    const materials = {
+        mudah: [
+            "Kucing Saya", "Sekolah Saya", "Rumah Saya", "Kawan Saya", "Bunga Raya",
+            "Bahan Bacaan 6", "Bahan Bacaan 7", "Bahan Bacaan 8", "Bahan Bacaan 9", "Bahan Bacaan 10"
+        ],
+        mediocre: [
+            "Bahan Bacaan 11", "Bahan Bacaan 12", "Bahan Bacaan 13", "Bahan Bacaan 14", "Bahan Bacaan 15",
+            "Bahan Bacaan 16", "Bahan Bacaan 17", "Bahan Bacaan 18", "Bahan Bacaan 19", "Bahan Bacaan 20"
+        ],
+        good: [
+            "Taman Bahasa Melayu", "Waspada semasa bermain", "Bahan Bacaan 23", "Bahan Bacaan 24", "Bahan Bacaan 25",
+            "Bahan Bacaan 26", "Bahan Bacaan 27", "Bahan Bacaan 28", "Bahan Bacaan 29", "Bahan Bacaan 30"
+        ]
+    };
+
+    function register() {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        auth.createUserWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                showCustomAlert('Pendaftaran berjaya!');
+                login();
+            })
+            .catch((error) => {
+                showCustomAlert('Ralat: ' + error.message);
+            });
+    }
+
+    function login() {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        auth.signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                showCustomAlert('Log masuk berjaya!');
+                document.querySelector('.login-container').classList.remove('visible');
+                document.querySelector('.main-container').classList.add('visible');
+                loadMaterials();
+                const user = auth.currentUser;
+                const username = user.email.split('@')[0];
+                loadDifficultWords(username, document.getElementById('material-selector').value);
+                loadProgress();
+                applyTheme();
+            })
+            .catch((error) => {
+                showCustomAlert('Ralat: ' + error.message);
+            });
+    }
+
+    function resetPassword() {
+        const email = document.getElementById('login-email').value;
+        auth.sendPasswordResetEmail(email)
+            .then(() => {
+                showCustomAlert('Emel reset kata laluan telah dihantar!');
+            })
+            .catch((error) => {
+                showCustomAlert('Ralat: ' + error.message);
+            });
+    }
+
+    function logout() {
+        auth.signOut().then(() => {
+            showCustomAlert('Log keluar berjaya!');
+            document.querySelector('.login-container').classList.add('visible');
+            document.querySelector('.main-container').classList.remove('visible');
+        }).catch((error) => {
+            showCustomAlert('Ralat: ' + error.message);
+        });
+    }
+
+    function loadMaterials() {
+        const level = document.getElementById('level-selector').value;
+        const materialSelector = document.getElementById('material-selector');
+        const chartMaterialSelector = document.getElementById('chart-material-selector');
+        materialSelector.innerHTML = '';
+        chartMaterialSelector.innerHTML = '';
+        materials[level].forEach(material => {
+            const option = document.createElement('option');
+            option.value = material;
+            option.textContent = material;
+            materialSelector.appendChild(option);
+            chartMaterialSelector.appendChild(option.cloneNode(true));
+        });
+        loadReadingMaterial();
+        updateChartMaterial();
+    }
+
+    function loadReadingMaterial() {
+        const selectedMaterial = document.getElementById('material-selector').value;
+        const readingContent = document.getElementById('reading-content');
+        readingContent.innerHTML = `<h3>${selectedMaterial}</h3>`;
+        let text = "";
+
+        if (selectedMaterial === "Kucing Saya") {
+            text = "Ini kucing saya. Kucing saya berwarna putih. Kucing saya bernama Comel. Kucing saya sangat nakal.";
+        } else if (selectedMaterial === "Sekolah Saya") {
+            text = "Ini sekolah saya. Sekolah saya sangat besar. Sekolah saya mempunyai padang. Padang sekolah saya sangat besar.";
+        } else if (selectedMaterial === "Rumah Saya") {
+            text = "Ini rumah saya. Rumah saya sangat besar. Rumah saya mempunyai tiga bilik. Rumah saya mempunyai pintu yang besar.";
+        } else if (selectedMaterial === "Kawan Saya") {
+            text = "Ini kawan saya. Kawan saya sangat baik. Kawan saya suka bermain bola. Kawan saya tinggal dekat rumah saya.";
+        } else if (selectedMaterial === "Bunga Raya") {
+            text = "Ini bunga raya. Bunga raya berwarna merah. Bunga raya adalah bunga kebangsaan. Bunga raya sangat cantik.";
+        } else if (selectedMaterial === "Taman Bahasa Melayu") {
+            text = `Taman Bahasa Melayu
+Di kelas Guan Hong ada Taman Bahasa Melayu. Di sini juga terdapat ruang bacaan dan pokok ilmu.
+
+Cikgu Wong dan murid-murid menghias taman kelas. Mereka menggantungkan kad perkataan pada pokok ilmu. Hasil kerja murid juga dipamerkan di taman ini.
+
+Taman kelas ini bersih, cantik dan kemas. Murid-murid membaca buku di taman ini dengan selesanya.`;
+        } else if (selectedMaterial === "Waspada semasa bermain") {
+            text = `Waspada semasa bermain
+
+Ravin dan Hanif rakan sekelas. Mereka suka bergurau. Lihatlah gelagat mereka. Wah, seronoknya mereka berkejar-kejaran! Mereka berlari sambil memegang pensel. Perbuatan mereka itu telah ditegur oleh Cikgu Suria. 
+
+Anding dan Jothan sedang bergurau. Mereka melakonkan aksi adiwira yang ditonton menerusi televisyen. Cikgu Tanesh menegur perbuatan mereka. Beliau menasihati mereka supaya jangan bermain secara kasar.`;
+        } else {
+            text = `Ini adalah teks untuk ${selectedMaterial}. Klik pada kata-kata sukar untuk menambah ke dalam senarai.`;
+        }
+
+        const paragraphs = text.split('\n').map(para => {
+            const p = document.createElement('p');
+            para.split(' ').forEach(word => {
+                const span = document.createElement('span');
+                span.textContent = word + " ";
+                span.onclick = function() {
+                    addDifficultWord(word);
+                };
+                p.appendChild(span);
+            });
+            return p;
+        });
+
+        paragraphs.forEach(p => readingContent.appendChild(p));
+
+        const user = auth.currentUser;
+        if (user) {
+            const username = user.email.split('@')[0];
+            loadDifficultWords(username, selectedMaterial);
+            loadProgress(selectedMaterial);
+        }
+    }
+
+    // Function to add a difficult word
+    function addDifficultWord(word) {
+        const difficultWordsList = document.getElementById('difficult-words-list');
+        const existingWords = [...difficultWordsList.children].map(child => child.textContent.replace('🔊', '').trim());
+        if (existingWords.includes(word)) {
+            return;
+        }
+        const wordElement = document.createElement('div');
+        wordElement.className = 'difficult-word';
+        wordElement.textContent = word;
+        wordElement.onclick = function() {
+            removeDifficultWord(wordElement);
+        };
+
+        const speakerIcon = document.createElement('span');
+        speakerIcon.className = 'speaker-icon';
+        speakerIcon.innerHTML = '🔊';
+        speakerIcon.onclick = function(event) {
+            event.stopPropagation();
+            speakWord(word);
+        };
+
+        wordElement.appendChild(speakerIcon);
+        difficultWordsList.appendChild(wordElement);
+
+        const user = auth.currentUser;
+        if (user) {
+            const username = user.email.split('@')[0];
+            const selectedMaterial = document.getElementById('material-selector').value;
+            database.ref('users/' + username + '/difficultWords/' + selectedMaterial).push(word);
+        }
+    }
+
+    // Function to remove a difficult word
+    function removeDifficultWord(element) {
+        const user = auth.currentUser;
+        if (user) {
+            const username = user.email.split('@')[0];
+            const selectedMaterial = document.getElementById('material-selector').value;
+            const word = element.textContent.replace('🔊', '').trim();
+            database.ref('users/' + username + '/difficultWords/' + selectedMaterial).orderByValue().equalTo(word).once('value', snapshot => {
+                snapshot.forEach(child => {
+                    child.ref.remove();
+                });
+            });
+        }
+        element.remove();
+    }
+
+    // Function to load difficult words from the database
+    function loadDifficultWords(username, material) {
+        const difficultWordsList = document.getElementById('difficult-words-list');
+        difficultWordsList.innerHTML = '';
+
+        database.ref('users/' + username + '/difficultWords/' + material).once('value', (snapshot) => {
+            snapshot.forEach((childSnapshot) => {
+                const word = childSnapshot.val();
+                addDifficultWord(word);
+            });
+        });
+    }
+
+    function speakWord(word) {
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = 'ms-MY';
+        const voices = speechSynthesis.getVoices();
+        const malayVoice = voices.find(voice => voice.lang === 'ms-MY');
+
+        if (malayVoice) {
+            utterance.voice = malayVoice;
+        } else {
+            document.getElementById('tts-info').style.display = 'block';
+            console.warn('Malay voice not available on this device');
+        }
+
+        speechSynthesis.speak(utterance);
+    }
+
+    function saveProgress() {
+        const user = auth.currentUser;
+        if (user) {
+            const username = user.email.split('@')[0];
+            const level = document.getElementById('level-selector').value;
+            const material = document.getElementById('material-selector').value;
+            const date = document.getElementById('evaluation-date').value;
+            const evaluation = document.getElementById('evaluation-level').value;
+
+            const progressData = {
+                level: level,
+                date: date,
+                evaluation: parseInt(evaluation)
+            };
+
+            // Save current progress
+            database.ref(`users/${username}/progress/${material}`).set(progressData, (error) => {
+                if (error) {
+                    showCustomAlert('Gagal menyimpan kemajuan: ' + error.message);
+                } else {
+                    showCustomAlert('Kemajuan disimpan.');
+                    updateProgress(evaluation);
+                }
+            });
+
+            // Save historical data
+            database.ref(`users/${username}/history/${material}`).push(progressData, (error) => {
+                if (error) {
+                    console.error('Gagal menyimpan sejarah:', error);
+                } else {
+                    console.log('Sejarah disimpan.');
+                    updateChartMaterial();
+                }
+            });
+        } else {
+            showCustomAlert('Sila log masuk dahulu.');
+        }
+    }
+
+    function loadProgress(material) {
+        const user = auth.currentUser;
+        if (user) {
+            const username = user.email.split('@')[0];
+            database.ref('users/' + username + '/progress/' + material).once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    document.getElementById('level-selector').value = data.level;
+                    document.getElementById('material-selector').value = material;
+                    document.getElementById('evaluation-date').value = data.date;
+                    document.getElementById('evaluation-level').value = data.evaluation;
+                    updateProgress(data.evaluation);
+                } else {
+                    resetProgress();
+                }
+            });
+        }
+    }
+
+    function resetProgress() {
+        document.getElementById('progress').style.width = '0%';
+        document.getElementById('progress').textContent = '0%';
+    }
+
+    function updateProgress(evaluation) {
+        const progress = document.getElementById('progress');
+        const percentage = (evaluation / 10) * 100;
+        progress.style.width = percentage + '%';
+        progress.textContent = percentage + '%';
+    }
+
+    function updateChartMaterial() {
+        const user = auth.currentUser;
+        if (user) {
+            const username = user.email.split('@')[0];
+            const material = document.getElementById('chart-material-selector').value;
+            updatePerformanceChart(username, material);
+        }
+    }
+
+    function updatePerformanceChart(username, material) {
+        database.ref(`users/${username}/history/${material}`).orderByChild('date').limitToLast(10).once('value', (snapshot) => {
+            const data = [];
+            snapshot.forEach((childSnapshot) => {
+                const progressData = childSnapshot.val();
+                data.push({
+                    date: progressData.date,
+                    evaluation: progressData.evaluation
+                });
+            });
+
+            renderChart(data, material);
+        });
+    }
+
+    function renderChart(data, material) {
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        
+        // Destroy existing chart if it exists
+        if (window.performanceChart instanceof Chart) {
+            window.performanceChart.destroy();
+        }
+
+        window.performanceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(item => item.date),
+                datasets: [{
+                    label: `Penilaian Guru - ${material}`,
+                    data: data.map(item => item.evaluation),
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 10
+                    }
+                }
+            }
+        });
+    }
+
+    // Custom alert function
+    function showCustomAlert(message) {
+        const alertBox = document.createElement('div');
+        alertBox.style.position = 'fixed';
+        alertBox.style.bottom = '20px';
+        alertBox.style.left = '50%';
+        alertBox.style.transform = 'translateX(-50%)';
+        alertBox.style.backgroundColor = 'var(--primary-color)';
+        alertBox.style.color = 'white';
+        alertBox.style.padding = '10px 20px';
+        alertBox.style.borderRadius = '5px';
+        alertBox.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
+        alertBox.style.zIndex = '1000';
+        alertBox.textContent = message;
+
+        document.body.appendChild(alertBox);
+
+        setTimeout(() => {
+            alertBox.remove();
+        }, 3000);
+    }
+
+    // Toggle theme function
+    function toggleTheme() {
+        document.querySelector('.main-container').classList.toggle('dark-theme');
+        saveThemePreference();
+    }
+
+    // Save theme preference
+    function saveThemePreference() {
+        const isDarkTheme = document.querySelector('.main-container').classList.contains('dark-theme');
+        localStorage.setItem('theme', isDarkTheme ? 'dark' : 'light');
+    }
+
+    // Apply theme preference
+    function applyTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme && savedTheme === 'dark') {
+            document.querySelector('.main-container').classList.add('dark-theme');
+            document.getElementById('theme-toggle').checked = true;
+        }
+    }
+
+    // Initialize the material options and chart on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadMaterials();
+        const user = auth.currentUser;
+        if (user) {
+            const username = user.email.split('@')[0];
+            updateChartMaterial();
+        }
+
+        // Apply saved theme preference on page load
+        applyTheme();
+
+        // Check for Malay TTS support
+        window.speechSynthesis.onvoiceschanged = function() {
+            const voices = speechSynthesis.getVoices();
+            const malayVoice = voices.find(voice => voice.lang === 'ms-MY');
+            if (!malayVoice) {
+                document.getElementById('tts-icon').style.display = 'inline-block';
+            }
+        };
+    });
+
+    // Toggle TTS info visibility
+    document.getElementById('tts-icon').addEventListener('click', function() {
+        const ttsInfo = document.getElementById('tts-info');
+        ttsInfo.style.display = ttsInfo.style.display === 'none' ? 'block' : 'none';
+    });
+    </script>
+</body>
+</html>
